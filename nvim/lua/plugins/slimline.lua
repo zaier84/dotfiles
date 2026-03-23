@@ -1,0 +1,21 @@
+return {
+--     "sschleemilch/slimline.nvim",
+--     opts = {},
+--     config = function()
+--         require('slimline').setup({
+--             spaces = {
+--                 components = "",
+--                 left = "",
+--                 right = "",
+--             },
+--             sep = {
+--                 hide = {
+--                     first = true,
+--                     last = true,
+--                 },
+--                 left = "",
+--                 right = "",
+--             },
+--         })
+--     end
+}
