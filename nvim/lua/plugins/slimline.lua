@@ -1,21 +1,27 @@
 return {
---     "sschleemilch/slimline.nvim",
---     opts = {},
---     config = function()
---         require('slimline').setup({
---             spaces = {
---                 components = "",
---                 left = "",
---                 right = "",
---             },
---             sep = {
---                 hide = {
---                     first = true,
---                     last = true,
---                 },
---                 left = "",
---                 right = "",
---             },
---         })
---     end
+    "sschleemilch/slimline.nvim",
+    opts = {},
+    config = function()
+        require('slimline').setup({
+            style = 'fg',
+            bold = true,
+            configs = {
+                path = {
+                    hl = {
+                        primary = 'Label',
+                    },
+                },
+                git = {
+                    hl = {
+                        primary = 'Function',
+                    },
+                },
+                filetype_lsp = {
+                    hl = {
+                        primary = 'String',
+                    },
+                },
+            },
+        })
+    end
 }

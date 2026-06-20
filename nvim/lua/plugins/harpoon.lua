@@ -1,5 +1,4 @@
 return {
-
     "theprimeagen/harpoon",
     config = function()
 
@@ -14,6 +13,4 @@ return {
         vim.keymap.set("n", "<c-n>", function() ui.nav_file(3) end)
         vim.keymap.set("n", "<c-s>", function() ui.nav_file(4) end)
     end
-
-
 }
