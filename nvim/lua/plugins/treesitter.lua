@@ -5,8 +5,7 @@ return {
         build = ":TSUpdate",
 
         config = function()
-
-            require'nvim-treesitter.configs'.setup {
+            require 'nvim-treesitter.configs'.setup {
                 -- a list of parser names, or "all" (the listed parsers must always be installed)
                 ensure_installed = {
                     "javascript",
@@ -39,11 +38,6 @@ return {
                     additional_vim_regex_highlighting = false,
                 },
             }
-
         end
     },
-
-    {
-        "nvim-treesitter/playground",
-    }
 }
