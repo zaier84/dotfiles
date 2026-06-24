@@ -12,7 +12,6 @@ vim.keymap.set("n", "N", "Nzzzv")
 vim.keymap.set("n", "=ap", "ma=ap'a")
 vim.keymap.set("n", "<leader>zig", "<cmd>LspRestart<cr>")
 
-
 -- greatest remap ever
 vim.keymap.set("x", "<leader>p", [["_dP]])
 
@@ -37,3 +36,7 @@ end)
 
 -- Yank whole file to clipboard without moving the cursor
 vim.keymap.set("n", "<leader>ya", ":%y+<CR>", { desc = "Yank entire file to clipboard", silent = true })
+
+-- Commenting (built-in gc/gcc, Neovim 0.10+) -- remap=true since gcc/gc are <Plug> maps
+vim.keymap.set("n", "<leader>/", "gcc", { remap = true, desc = "Toggle comment line" })
+vim.keymap.set("x", "<leader>/", "gc", { remap = true, desc = "Toggle comment selection" })

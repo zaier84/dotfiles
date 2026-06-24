@@ -1,27 +1,35 @@
 return {
-    "brenton-leighton/multiple-cursors.nvim",
-    version = "*", -- Use the latest tagged version
-    opts = {},     -- This causes the plugin setup function to be called
-    keys = {
-        { "<C-j>",         "<Cmd>MultipleCursorsAddDown<CR>",          mode = { "n", "x" },      desc = "Add cursor and move down" },
-        { "<C-k>",         "<Cmd>MultipleCursorsAddUp<CR>",            mode = { "n", "x" },      desc = "Add cursor and move up" },
+    "jake-stewart/multicursor.nvim",
+    branch = "1.0",
+    config = function()
+        local mc = require("multicursor-nvim")
+        mc.setup()
 
-        -- { "<C-Up>",        "<Cmd>MultipleCursorsAddUp<CR>",            mode = { "n", "i", "x" }, desc = "Add cursor and move up" },
-        -- { "<C-Down>",      "<Cmd>MultipleCursorsAddDown<CR>",          mode = { "n", "i", "x" }, desc = "Add cursor and move down" },
+        -- Add cursors above/below the main cursor
+        vim.keymap.set({ "n", "x" }, "<C-j>", function() mc.lineAddCursor(1) end,
+            { desc = "Add cursor below" })
+        vim.keymap.set({ "n", "x" }, "<C-k>", function() mc.lineAddCursor(-1) end,
+            { desc = "Add cursor above" })
 
-        { "<C-LeftMouse>", "<Cmd>MultipleCursorsMouseAddDelete<CR>",   mode = { "n", "i" },      desc = "Add or remove cursor" },
+        -- Match the word/selection under the cursor
+        vim.keymap.set({ "n", "x" }, "<leader>n", function() mc.matchAddCursor(1) end,
+            { desc = "Add cursor at next match" })
+        vim.keymap.set({ "n", "x" }, "<leader>N", function() mc.matchSkipCursor(1) end,
+            { desc = "Skip to next match" })
+        vim.keymap.set({ "n", "x" }, "<leader>m", function() mc.matchAllAddCursors() end,
+            { desc = "Add cursors to all matches" })
 
-        { "<Leader>m",     "<Cmd>MultipleCursorsAddVisualArea<CR>",    mode = { "x" },           desc = "Add cursors to the lines of the visual area" },
-
-        { "<Leader>a",     "<Cmd>MultipleCursorsAddMatches<CR>",       mode = { "n", "x" },      desc = "Add cursors to cword" },
-        { "<Leader>A",     "<Cmd>MultipleCursorsAddMatchesV<CR>",      mode = { "n", "x" },      desc = "Add cursors to cword in previous area" },
-
-        { "<C-n>",     "<Cmd>MultipleCursorsAddJumpNextMatch<CR>", mode = { "n", "x" },      desc = "Add cursor and jump to next cword" },
-        { "<C-N>",     "<Cmd>MultipleCursorsJumpNextMatch<CR>",    mode = { "n", "x" },      desc = "Jump to next cword" },
-
-        { "<Leader>l",     "<Cmd>MultipleCursorsLock<CR>",             mode = { "n", "x" },      desc = "Lock virtual cursors" },
-
-        -- { "<Leader>d",     "<Cmd>MultipleCursorsAddJumpNextMatch<CR>", mode = { "n", "x" },      desc = "Add cursor and jump to next cword" },
-        -- { "<Leader>D",     "<Cmd>MultipleCursorsJumpNextMatch<CR>",    mode = { "n", "x" },      desc = "Jump to next cword" },
-    },
+        -- Keymaps active only while multiple cursors exist
+        mc.addKeymapLayer(function(layerSet)
+            layerSet({ "n", "x" }, "<left>", mc.prevCursor)
+            layerSet({ "n", "x" }, "<right>", mc.nextCursor)
+            layerSet("n", "<esc>", function()
+                if not mc.cursorsEnabled() then
+                    mc.enableCursors()
+                else
+                    mc.clearCursors()
+                end
+            end)
+        end)
+    end,
 }

@@ -21,14 +21,14 @@ return {
                 ensure_installed = { "lua_ls", "ts_ls", "clangd", "pyright" }
             })
         end
-
     },
 
     {
         "neovim/nvim-lspconfig",
 
         config = function()
-            local capabilities = require("cmp_nvim_lsp").default_capabilities()
+            -- local capabilities = require("cmp_nvim_lsp").default_capabilities()
+            local capabilities = require("blink.cmp").get_lsp_capabilities()
 
             -- Lua
             vim.lsp.config("lua_ls", {
@@ -75,23 +75,13 @@ return {
             })
 
             -- Erlang
-            vim.api.nvim_create_autocmd("FileType", {
-                pattern = "erlang",
-                callback = function(args)
-                    local fname = vim.api.nvim_buf_get_name(args.buf)
-                    vim.lsp.start({
-                        name = "erlangls",
-                        cmd = { "escript", "C:/tools/erlang_ls/erlang_ls" },
-                        -- cmd = { "escript", "C:\\tools\\erlang_ls\\erlang_ls" },
-                        root_dir = vim.fs.root(fname, { "rebar.config", "erlang.mk", ".git" })
-                            or vim.fs.dirname(fname)
-                            or vim.loop.cwd(),
-                        capabilities = capabilities,
-                        filetypes = { "erlang" },
-                        single_file_support = true,
-                    })
-                end,
+            vim.lsp.config("erlangls", {
+                cmd = { "escript", "C:/tools/erlang_ls/erlang_ls" },
+                filetypes = { "erlang" },
+                root_markers = { "rebar.config", "erlang.mk", ".git" },
+                capabilities = capabilities,
             })
+            vim.lsp.enable("erlangls")
 
             vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
             vim.keymap.set("n", "<C-f>", vim.lsp.buf.format, {})
@@ -99,54 +89,86 @@ return {
             vim.keymap.set("n", "<C-r>", vim.lsp.buf.rename, {})
             vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
 
-            vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, {})
-            vim.keymap.set("n", "]d", vim.diagnostic.goto_next, {})
+            vim.keymap.set("n", "[d", function()
+                vim.diagnostic.jump({
+                    count = -1,
+                    on_jump = function()
+                        vim.diagnostic.open_float()
+                    end,
+                })
+            end)
+            vim.keymap.set("n", "]d", function()
+                vim.diagnostic.jump({
+                    count = 1,
+                    on_jump = function()
+                        vim.diagnostic.open_float()
+                    end,
+                })
+            end)
             vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float, {})
             vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, {})
         end
     },
 
+    -- Completion engine: replaced by blink.cmp (kept commented for easy revert)
+    -- {
+    --     "hrsh7th/nvim-cmp",
+    --     dependencies = {
+    --         "hrsh7th/cmp-nvim-lsp", -- LSP source
+    --         "hrsh7th/cmp-buffer",   -- buffer words
+    --         "hrsh7th/cmp-path",     -- filesystem paths
+    --         "hrsh7th/cmp-cmdline",  -- :cmdline completions
+    --         "L3MON4D3/LuaSnip",     -- snippet engine (required)
+    --         -- "hrsh7th/cmp-nvim-lsp-signature-help",
+    --     },
+    --     config = function()
+    --         local cmp = require("cmp")
+    --         cmp.setup({
+    --             snippet = {
+    --                 expand = function(args)
+    --                     require("luasnip").lsp_expand(args.body)
+    --                 end,
+    --             },
+    --             mapping = cmp.mapping.preset.insert({
+    --                 ["<C-Space>"] = cmp.mapping.complete(),            -- open completion menu
+    --                 ["<CR>"] = cmp.mapping.confirm({ select = true }), -- confirm selection
+    --                 ["<Tab>"] = cmp.mapping.select_next_item(),        -- move down
+    --                 ["<S-Tab>"] = cmp.mapping.select_prev_item(),      -- move up
+    --                 ["<C-e>"] = cmp.mapping.abort(),                   -- close menu
+    --             }),
+    --             sources = cmp.config.sources({
+    --                 { name = "nvim_lsp" },
+    --                 { name = "buffer" },
+    --                 { name = "path" },
+    --                 -- { name = "nvim_lsp_signature_help" },
+    --             }),
+    --         })
+    --
+    --         -- Autopairs integration
+    --         local cmp_autopairs = require("nvim-autopairs.completion.cmp")
+    --         cmp.event:on(
+    --             "confirm_done",
+    --             cmp_autopairs.on_confirm_done()
+    --         )
+    --     end
+    -- },
+
     {
         -- Completion engine
-        "hrsh7th/nvim-cmp",
-        dependencies = {
-            "hrsh7th/cmp-nvim-lsp", -- LSP source
-            "hrsh7th/cmp-buffer",   -- buffer words
-            "hrsh7th/cmp-path",     -- filesystem paths
-            "hrsh7th/cmp-cmdline",  -- :cmdline completions
-            "L3MON4D3/LuaSnip",     -- snippet engine (required)
-            "hrsh7th/cmp-nvim-lsp-signature-help",
+        "saghen/blink.cmp",
+        version = "1.*", -- pulls a prebuilt binary; no Rust toolchain needed on Windows
+        dependencies = { "rafamadriz/friendly-snippets" },
+        opts = {
+            keymap = {
+                preset = "enter",                            -- <CR> accepts
+                ["<Tab>"] = { "select_next", "fallback" },   -- match old nvim-cmp behavior
+                ["<S-Tab>"] = { "select_prev", "fallback" },
+                ["<C-Space>"] = { "show", "fallback" },
+                ["<C-e>"] = { "hide", "fallback" },
+            },
+            sources = { default = { "lsp", "path", "snippets", "buffer" } },
+            -- auto_brackets is on by default; nvim-autopairs still handles typed pairs
         },
-        config = function()
-            local cmp = require("cmp")
-            cmp.setup({
-                snippet = {
-                    expand = function(args)
-                        require("luasnip").lsp_expand(args.body)
-                    end,
-                },
-                mapping = cmp.mapping.preset.insert({
-                    ["<C-Space>"] = cmp.mapping.complete(),            -- open completion menu
-                    ["<CR>"] = cmp.mapping.confirm({ select = true }), -- confirm selection
-                    ["<Tab>"] = cmp.mapping.select_next_item(),        -- move down
-                    ["<S-Tab>"] = cmp.mapping.select_prev_item(),      -- move up
-                    ["<C-e>"] = cmp.mapping.abort(),                   -- close menu
-                }),
-                sources = cmp.config.sources({
-                    { name = "nvim_lsp" },
-                    { name = "buffer" },
-                    { name = "path" },
-                    { name = "nvim_lsp_signature_help" },
-                }),
-            })
-
-            -- Autopairs integration
-            local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-            cmp.event:on(
-                "confirm_done",
-                cmp_autopairs.on_confirm_done()
-            )
-        end
     },
 
     {
@@ -162,7 +184,8 @@ return {
         config = function()
             require("flutter-tools").setup({
                 lsp = {
-                    capabilities = require("cmp_nvim_lsp").default_capabilities(),
+                    -- capabilities = require("cmp_nvim_lsp").default_capabilities(),
+                    capabilities = require("blink.cmp").get_lsp_capabilities(),
                     on_attach = function(client, bufnr)
                         vim.keymap.set("n", "<C-f>", function()
                             vim.lsp.buf.format({ async = true })
