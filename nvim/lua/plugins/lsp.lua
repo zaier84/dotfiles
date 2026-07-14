@@ -3,7 +3,6 @@ return {
         "mason-org/mason.nvim",
 
         config = function()
-            -- require("mason").setup()
             require("mason").setup({
                 registries = {
                     "github:mason-org/mason-registry",
@@ -27,7 +26,6 @@ return {
         "neovim/nvim-lspconfig",
 
         config = function()
-            -- local capabilities = require("cmp_nvim_lsp").default_capabilities()
             local capabilities = require("blink.cmp").get_lsp_capabilities()
 
             -- Lua
@@ -110,63 +108,40 @@ return {
         end
     },
 
-    -- Completion engine: replaced by blink.cmp (kept commented for easy revert)
-    -- {
-    --     "hrsh7th/nvim-cmp",
-    --     dependencies = {
-    --         "hrsh7th/cmp-nvim-lsp", -- LSP source
-    --         "hrsh7th/cmp-buffer",   -- buffer words
-    --         "hrsh7th/cmp-path",     -- filesystem paths
-    --         "hrsh7th/cmp-cmdline",  -- :cmdline completions
-    --         "L3MON4D3/LuaSnip",     -- snippet engine (required)
-    --         -- "hrsh7th/cmp-nvim-lsp-signature-help",
-    --     },
-    --     config = function()
-    --         local cmp = require("cmp")
-    --         cmp.setup({
-    --             snippet = {
-    --                 expand = function(args)
-    --                     require("luasnip").lsp_expand(args.body)
-    --                 end,
-    --             },
-    --             mapping = cmp.mapping.preset.insert({
-    --                 ["<C-Space>"] = cmp.mapping.complete(),            -- open completion menu
-    --                 ["<CR>"] = cmp.mapping.confirm({ select = true }), -- confirm selection
-    --                 ["<Tab>"] = cmp.mapping.select_next_item(),        -- move down
-    --                 ["<S-Tab>"] = cmp.mapping.select_prev_item(),      -- move up
-    --                 ["<C-e>"] = cmp.mapping.abort(),                   -- close menu
-    --             }),
-    --             sources = cmp.config.sources({
-    --                 { name = "nvim_lsp" },
-    --                 { name = "buffer" },
-    --                 { name = "path" },
-    --                 -- { name = "nvim_lsp_signature_help" },
-    --             }),
-    --         })
-    --
-    --         -- Autopairs integration
-    --         local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-    --         cmp.event:on(
-    --             "confirm_done",
-    --             cmp_autopairs.on_confirm_done()
-    --         )
-    --     end
-    -- },
+    {
+        "folke/lazydev.nvim",
+        ft = "lua",
+        opts = {
+            library = {
+                { path = "luvit-meta/library", words = { "vim%.uv" } },
+            },
+        },
+    },
+    { "Bilal2453/luvit-meta", lazy = true },
 
     {
-        -- Completion engine
         "saghen/blink.cmp",
         version = "1.*", -- pulls a prebuilt binary; no Rust toolchain needed on Windows
         dependencies = { "rafamadriz/friendly-snippets" },
         opts = {
             keymap = {
-                preset = "enter",                            -- <CR> accepts
-                ["<Tab>"] = { "select_next", "fallback" },   -- match old nvim-cmp behavior
+                preset = "enter",                          -- <CR> accepts
+                ["<Tab>"] = { "select_next", "fallback" }, -- match old nvim-cmp behavior
                 ["<S-Tab>"] = { "select_prev", "fallback" },
                 ["<C-Space>"] = { "show", "fallback" },
                 ["<C-e>"] = { "hide", "fallback" },
             },
-            sources = { default = { "lsp", "path", "snippets", "buffer" } },
+            -- sources = { default = { "lsp", "path", "snippets", "buffer" } },
+            sources = {
+                default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+                providers = {
+                    lazydev = {
+                        name = "LazyDev",
+                        module = "lazydev.integrations.blink",
+                        score_offset = 100,
+                    },
+                },
+            },
             -- auto_brackets is on by default; nvim-autopairs still handles typed pairs
         },
     },
